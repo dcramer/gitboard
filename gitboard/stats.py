@@ -38,7 +38,8 @@ class Storage(object):
         elif message_length < 10:
             score -=1
 
-        if 'github.com' in message:
+        if 'github.com' in message or 'fixes #' in message or 'refs #' in message or \
+           'closes #' in message:
             score += 2
         elif 'http://' in message or 'https://' in message:
             score += 1
