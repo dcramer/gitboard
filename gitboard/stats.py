@@ -8,6 +8,7 @@ gitboard.stats
 
 from collections import defaultdict
 from datetime import datetime, timedelta
+import re
 
 class Storage(object):
     def __init__(self, redis):
@@ -31,21 +32,21 @@ class Storage(object):
         score = 1
         
         message_length = len(message or '')
-        if message_length > 35:
+        if message_length > 50:
             score += 1
-        elif not message_length:
-            score -= 3
         elif message_length < 10:
             score -=1
 
-        if 'github.com' in message or 'fixes #' in message or 'refs #' in message or \
-           'closes #' in message:
-            score += 2
+        if re.search(r'#[0-9]+', message):
+            score += 4
         elif 'http://' in message or 'https://' in message:
             score += 1
 
         self.redis.zincrby('scores:%s:%s' % (repository, date.strftime('%I-%d-%Y:%H:00')), author, score)
         self.redis.zincrby('scores:global:%s' % (date.strftime('%I-%d-%Y:%H:00')), author, score)
+
+        self.redis.zincrby('commits:%s:%s' % (repository, date.strftime('%I-%d-%Y:%H:00')), author, 1)
+        self.redis.zincrby('commits:global:%s' % (date.strftime('%I-%d-%Y:%H:00')), author, 1)
 
     def get_leaders(self, repository='global', hours=24):
         keybase = 'scores:%s:%%s' % (repository,)
@@ -53,7 +54,7 @@ class Storage(object):
         date = datetime.utcnow()
         
         results = defaultdict(int)
-        for hour in xrange(hours):
+        for hour in xrange(hours - 1):
             key = keybase % (date - timedelta(hours=hour)).strftime('%I-%d-%Y:%H:00')
             for result, score in self.redis.zrevrange(key, 0, -1, withscores=True):
                 results[result] += score
