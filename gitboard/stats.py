@@ -42,11 +42,11 @@ class Storage(object):
         elif 'http://' in message or 'https://' in message:
             score += 1
 
-        self.redis.zincrby('scores:%s:%s' % (repository, date.strftime('%I-%d-%Y:%H:00')), author, score)
-        self.redis.zincrby('scores:global:%s' % (date.strftime('%I-%d-%Y:%H:00')), author, score)
+        self.redis.zincrby('scores:%s:%s' % (repository, date.strftime('%m-%d-%Y:%H:00')), author, score)
+        self.redis.zincrby('scores:global:%s' % (date.strftime('%m-%d-%Y:%H:00')), author, score)
 
-        self.redis.zincrby('commits:%s:%s' % (repository, date.strftime('%I-%d-%Y:%H:00')), author, 1)
-        self.redis.zincrby('commits:global:%s' % (date.strftime('%I-%d-%Y:%H:00')), author, 1)
+        self.redis.zincrby('commits:%s:%s' % (repository, date.strftime('%m-%d-%Y:%H:00')), author, 1)
+        self.redis.zincrby('commits:global:%s' % (date.strftime('%m-%d-%Y:%H:00')), author, 1)
 
     def get_leaders(self, repository='global', hours=24):
         keybase = 'scores:%s:%%s' % (repository,)
@@ -55,7 +55,7 @@ class Storage(object):
         
         results = defaultdict(int)
         for hour in xrange(hours - 1):
-            key = keybase % (date - timedelta(hours=hour)).strftime('%I-%d-%Y:%H:00')
+            key = keybase % (date - timedelta(hours=hour)).strftime('%m-%d-%Y:%H:00')
             for result, score in self.redis.zrevrange(key, 0, -1, withscores=True):
                 results[result] += score
         
