@@ -92,7 +92,7 @@ def get_commits_since(repository, since=None, until='HEAD'):
     # 562d8ac92d42b40caf02f4340c6d89859eb2de1d David Cramer
     # 54 files changed, 178230 insertions(+), 178275 deletions(-)
     chunk = []
-    for line in execute('git log --shortstat --no-merges --all --first-parent --pretty=format:"%%T %%at %%aE%%n%%s" %s' % refs, cwd=repo_path):
+    for line in execute('git log --shortstat --no-merges --all --pretty=format:"%%T %%at %%aE%%n%%s" %s' % refs, cwd=repo_path):
         if not line and len(chunk) > 2:
             # ['5314c27c5658be18b096ea9164232a7bd02ac74a', 'denormalize service urls', '3 files changed, 22 insertions(+), 13 deletions(-)']
             revision, timestamp, author = chunk[0].split(' ', 2)
