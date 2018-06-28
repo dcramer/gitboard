@@ -14,14 +14,16 @@ class Storage(object):
             dict(author=author, timestamp=timestamp, message=message, **kwargs),
         )
 
-        added = self.redis.zadd("commits:%s" % repository, revision, timestamp)
+        added = self.redis.zadd(
+            "commits:%s" % repository, **{revision: float(timestamp)}
+        )
 
         if not added:
             return
 
         date = datetime.fromtimestamp(timestamp)
 
-        score = 1
+        score = 1.0
 
         message_length = len(message or "")
         if message_length > 50:
@@ -44,10 +46,10 @@ class Storage(object):
         )
 
         self.redis.zincrby(
-            "commits:%s:%s" % (repository, date.strftime("%m-%d-%Y:%H:00")), author, 1
+            "commits:%s:%s" % (repository, date.strftime("%m-%d-%Y:%H:00")), author, 1.0
         )
         self.redis.zincrby(
-            "commits:global:%s" % (date.strftime("%m-%d-%Y:%H:00")), author, 1
+            "commits:global:%s" % (date.strftime("%m-%d-%Y:%H:00")), author, 1.0
         )
 
     def get_leaders(self, repository="global", hours=24):

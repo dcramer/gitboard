@@ -28,10 +28,9 @@ class StreamReader(object):
 
     def __iter__(self):
         p = self.p
-        while p.poll() is None:
-            for line in iter(p.stdout.readline, ""):
-                line = line.strip()
-                yield line.decode("utf-8")
+        for line in p.stdout:
+            line = line.strip()
+            yield line.decode("utf-8")
         if not p.wait() == 0:
             raise CommandError(p.stderr.read())
 
@@ -54,7 +53,7 @@ def update_stats(repository):
 
     since = storage.get_last_commit(repository)
     commits = get_commits_since(repository, since=since)
-    for revision, commit in commits.iteritems():
+    for revision, commit in commits.items():
         storage.store(repository, revision, **commit)
 
 
