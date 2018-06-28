@@ -28,9 +28,10 @@ class StreamReader(object):
 
     def __iter__(self):
         p = self.p
-        for line in p.stdout:
-            line = line.strip()
-            yield line.decode("utf-8")
+        while p.poll() is None:
+            for line in p.stdout:
+                line = line.strip()
+                yield line.decode("utf-8")
         if not p.wait() == 0:
             raise CommandError(p.stderr.read())
 
