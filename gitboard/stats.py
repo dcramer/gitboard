@@ -14,9 +14,7 @@ class Storage(object):
             dict(author=author, timestamp=timestamp, message=message, **kwargs),
         )
 
-        added = self.redis.zadd(
-            "commits:%s" % repository, **{revision: float(timestamp)}
-        )
+        added = self.redis.zadd("commits:%s" % repository, float(timestamp), revision)
 
         if not added:
             return
@@ -61,12 +59,14 @@ class Storage(object):
         for hour in range(hours - 1):
             key = keybase % (date - timedelta(hours=hour)).strftime("%m-%d-%Y:%H:00")
             for result, score in self.redis.zrevrange(key, 0, -1, withscores=True):
-                results[result] += score
+                results[result.decode("utf-8")] += score
 
         return sorted(results.items(), key=lambda x: x[1], reverse=True)
 
     def get_last_commit(self, repository):
         try:
-            return self.redis.zrange("commits:%s" % repository, 0, 1)[0]
+            return self.redis.zrevrange("commits:%s" % repository, 0, 1)[0].decode(
+                "utf-8"
+            )
         except IndexError:
             return None
