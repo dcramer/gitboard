@@ -2,6 +2,7 @@ import re
 
 from collections import defaultdict
 from datetime import datetime, timedelta
+from flask import current_app
 
 
 class Storage(object):
@@ -54,12 +55,17 @@ class Storage(object):
         keybase = "scores:%s:%%s" % (repository,)
 
         date = datetime.utcnow()
+        exclusions = frozenset(current_app.config["EXCLUDE"])
+        aliases = current_app.config["ALIASES"]
 
         results = defaultdict(int)
         for hour in range(hours - 1):
             key = keybase % (date - timedelta(hours=hour)).strftime("%m-%d-%Y:%H:00")
             for result, score in self.redis.zrevrange(key, 0, -1, withscores=True):
-                results[result.decode("utf-8")] += score
+                result = result.decode("utf-8")
+                result = aliases.get(result, result)
+                if result not in exclusions:
+                    results[result] += score
 
         return sorted(results.items(), key=lambda x: x[1], reverse=True)
 
