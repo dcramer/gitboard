@@ -18,6 +18,7 @@ def update():
 
     # scores = defaultdict(int)
     for repo in current_app.config["REPOS"]:
+        click.echo("> Processing {}".format(repo))
         update_stats(repo)
         # print "----------------------------------------"
         # print "%dh Leaderboard for %s" % (hours, repo)
