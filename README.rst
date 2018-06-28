@@ -1,3 +1,11 @@
+Setup:
+
+```
+mkvirtualenv --python=`which python3`
+make
+gitboard update
+```
+
 Rough point value ideas:
 
 (All comparisons will be done to commits within the last 3 hours)
