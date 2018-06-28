@@ -6,15 +6,14 @@ from .base import cli
 
 
 @cli.command()
-def update():
+@click.option("--hours", "-h", default=24, type=int)
+def update(hours):
     # from collections import defaultdict
     from gitboard.config import redis
     from gitboard.stats import Storage
     from gitboard.update import update_stats
 
     storage = Storage(redis)
-
-    hours = 24
 
     # scores = defaultdict(int)
     for repo in current_app.config["REPOS"]:
